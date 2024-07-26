@@ -1,4 +1,4 @@
-# Pi_Hailo_Wildlife
+*# Pi_Hailo_Wildlife
 Pi5 + Hailo to capture Wildlife videos
 
 Captures 640x640 images and makes .mp4 videos
@@ -12,3 +12,5 @@ run with ./start_cam.sh
 Runs a pre-capture buffer of approx 2 seconds
 
 copy detection_001.py into /home/USERNAME/hailo-rpi5-examples/basic_pipelines/detection_001.py
+
+Videos saved in /home/USERNAME/Videos
