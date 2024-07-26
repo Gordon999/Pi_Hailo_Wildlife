@@ -5,7 +5,7 @@ Note I use a 8GB Pi5, and save frames to RAM.
 
 Captures 640x640 images and makes .mp4 videos
 
-Change line 94 to suit your detections .... if (label == "cat" and confidence > 0.35) or (label == "bear" and confidence > 0.35):
+Change line 94 to suit your required detections .... if (label == "cat" and confidence > 0.35) or (label == "bear" and confidence > 0.35):
 
 Note in line 259 the width and height are set for a Pi GS camera, you may need to change to suit other cameras
 
