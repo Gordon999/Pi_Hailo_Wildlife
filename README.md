@@ -1,5 +1,5 @@
 # Pi_Hailo_Wildlife
-Pi5 + Hailo to capture Wildlife videos
+Pi5 + Hailo + PI Camera to capture Wildlife videos
 
 Captures 640x640 images and makes .mp4 videos
 
