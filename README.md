@@ -1,5 +1,5 @@
 # Pi_Hailo_Wildlife
-Pi5 + Hailo + PI Camera to capture Wildlife videos
+Pi5 + Hailo HAT + PI Camera to capture Wildlife videos
 
 Note I use a 8GB Pi5, and save frames to RAM.
 
