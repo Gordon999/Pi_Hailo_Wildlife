@@ -1,6 +1,8 @@
 # Pi_Hailo_Wildlife
 Pi5 + Hailo + PI Camera to capture Wildlife videos
 
+Note I use a 8GB Pi5, and save frames to RAM.
+
 Captures 640x640 images and makes .mp4 videos
 
 Change line 94 to suit your detections .... if (label == "cat" and confidence > 0.35) or (label == "bear" and confidence > 0.35):
