@@ -21,7 +21,7 @@ Edit start_cam.sh to suit your USERNAME, eg change gt64bw to your USERNAME
 
 Run with ./start_cam.sh
 
-Note it is set to shutdown at 21:00, if clock synced, see line 19 sd_hour = 21
+Note it is set to shutdown at 21:00, if clock synced, see line 19 sd_hour = 21, set to 24 to disable.
 
 Probably needs the Active Cooler fitted to the Pi5, l change the fan to start at 60degC.
 
