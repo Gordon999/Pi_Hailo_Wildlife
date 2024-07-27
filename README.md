@@ -25,7 +25,7 @@ Note it is set to shutdown at 21:00, if clock synced, see line 19 sd_hour = 21
 
 Probably needs the Active Cooler fitted to the Pi5, l change the fan to start at 60degC.
 
-if you want to crop the image to make use of the full 640x640...
+if you want to crop the image to make use of the full 640x640... this will crop GS image to 1088x1088 and rescale to 640x640
 
     def get_pipeline_string(self):
 
