@@ -1,6 +1,8 @@
 # Pi_Hailo_Wildlife
 Pi5 + Hailo HAT + PI Camera to capture Wildlife videos
 
+It is a modified version of the hailo pi5 detection.py example https://github.com/hailo-ai/hailo-rpi5-examples/tree/main/basic_pipelines
+
 Note I use a 8GB Pi5, and save frames to RAM, if you expect a lot of detections, and hence long videos this may fill the ram and at present l haven't 
 any detection to stop this. It could be added if required.
 
