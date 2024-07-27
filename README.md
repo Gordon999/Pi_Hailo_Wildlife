@@ -27,9 +27,9 @@ Probably needs the Active Cooler fitted to the Pi5, l change the fan to start at
 
 if you want to crop the image to make use of the full 640x640...
 
-  def get_pipeline_string(self):
+    def get_pipeline_string(self):
 
-    if (self.source_type == "rpi"):
+      if (self.source_type == "rpi"):
 
         source_element = f"libcamerasrc name=src_0 ! "
 
