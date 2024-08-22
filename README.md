@@ -15,7 +15,7 @@ Change line 82 to suit your required detections .... if (label == "cat" and conf
 Note in line 239 the width and height are set for a Pi GS camera, you may need to change to suit other cameras... 
   source_element += f"video/x-raw, format={self.network_format}, width=1280, height=1088 ! "
 
-Runs a pre-capture buffer of approx 3 seconds, set in line 309, pre_frames = 90 # frames
+Runs a pre-capture buffer of approx 3 seconds, set in line 25, pre_frames = 90 # frames
 
 Copy detection_001.py into /home/USERNAME/hailo-rpi5-examples/basic_pipelines/detection_001.py
 
