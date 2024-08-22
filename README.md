@@ -21,6 +21,8 @@ Copy detection_001.py into /home/USERNAME/hailo-rpi5-examples/basic_pipelines/de
 
 Videos saved in /home/USERNAME/Videos
 
+Recording LED added, defualtr gpio 21
+
 Edit start_cam.sh to suit your USERNAME, eg change gt64bw to your USERNAME
 
 Run with ./start_cam.sh
