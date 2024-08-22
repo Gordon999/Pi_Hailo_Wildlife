@@ -15,32 +15,20 @@ import glob
 import hailo
 from hailo_common_funcs import get_numpy_from_buffer, disable_qos
 from hailo_rpi_common import get_default_parser, QUEUE, get_caps_from_pad, GStreamerApp, app_callback_class
+from gpiozero import LED
 
-sd_hour = 21
+# v0.02
 
-h_user = "/home/" + os.getlogin( )
-m_user = "/media/" + os.getlogin( )
-print(h_user,m_user)
+# set variables
+vid_length = 10  # seconds
+mp4_timer  = 10  # seconds
+pre_frames = 90  # frames
+led        = 21  # record led gpio
 
-# check if clock synchronised
-synced = 0
-os.system("timedatectl >> /run/shm/sync.txt")
-# read sync.txt file
-try:
-    sync = []
-    with open("/run/shm/sync.txt", "r") as file:
-        line = file.readline()
-        while line:
-            sync.append(line.strip())
-            line = file.readline()
-    if sync[4] == "System clock synchronized: yes":
-        synced = 1
-    else:
-        synced = 0
-    if trace > 0:
-        print("SYNC: ", synced)
-except:
-    pass
+# shutdown time
+sd_hour = 20
+sd_mins = 30
+auto_sd = 1  # set to 1 to shutdown at set time
 
 # -----------------------------------------------------------------------------------------------
 # User defined class to be used in the callback function
@@ -63,7 +51,7 @@ user_data = user_app_callback_class()
 
 # This is the callback function that will be called when data is available from the pipeline
 def app_callback(pad, info, user_data):
-    global synced,h_user,m_user,sd_hour,count,record,start,timestamp,pre_frames,user,vid_length,start2,mp4_timer
+    global rec_led,synced,h_user,m_user,sd_hour,sd_mins,b_count,f_count,auto_sd,record,start,timestamp,pre_frames,user,vid_length,start2,mp4_timer
     # Get the GstBuffer from the probe info
     buffer = info.get_buffer()
     # Check if the buffer is valid
@@ -91,40 +79,47 @@ def app_callback(pad, info, user_data):
         bbox = detection.get_bbox()
         confidence = detection.get_confidence()
         #print(label,confidence)
-        if (label == "cat" and confidence > 0.35) or (label == "bear" and confidence > 0.35):
-            # print(label,confidence)
+        if (label == "cat" and confidence > 0.35) or (label == "bear" and confidence > 0.35) or (label == "clock" and confidence > 0.35):
             # start recording on detection
             if record == 0:
                 record = 1
+                rec_led.on()
                 now = datetime.datetime.now()
                 timestamp = now.strftime("%y%m%d%H%M%S")
-                start = time.monotonic()
-                start2 = time.monotonic()
-            else:
-                start = time.monotonic()
-                start2 = time.monotonic()
-    #print(len(detections),record,time.monotonic() - start,time.monotonic() - start2)
-    # stop recording if exceeded required length and no detections
-    if record == 1 and time.monotonic() - start > vid_length and len(detections) == 0:
+            start  = time.monotonic()
+            start2 = time.monotonic()
+                 
+    # stop recording if exceeded required video length and no detections
+    if record == 1 and time.monotonic() - start > vid_length:
         start2 = time.monotonic()
         start  = time.monotonic()
         record = 0
-        count  = 0
-        # rename jpegs
-        pics = glob.glob('/run/shm/frames*.jpg')
+        rec_led.off()
+        b_count = 0
+        f_count = 0
+        # rename buffer frames
+        pics = glob.glob('/run/shm/buffer*.jpg')
         pics.sort(reverse = False)
         frames = 0
         for x in range(0,len(pics)):
-            frame2 = "00000" + str(frames)
-            os.rename(pics[x],'/run/shm/' + timestamp + "_" + str(frame2[-5:]) + '.jpg')
+            frame = "00000" + str(frames)
+            os.rename(pics[x],'/run/shm/' + timestamp + "_" + str(frame[-5:]) + '.jpg')
+            frames +=1
+        # rename captured frames
+        pics = glob.glob('/run/shm/frames*.jpg')
+        pics.sort(reverse = False)
+        for x in range(0,len(pics)):
+            frame = "00000" + str(frames)
+            os.rename(pics[x],'/run/shm/' + timestamp + "_" + str(frame[-5:]) + '.jpg')
             frames +=1
 
     if record == 0: # add to circular buffer
-        count +=1
-        count2 = "00000" + str(count)
+        b_count +=1
+        f_count = 0
+        count = "000000" + str(b_count)
         frame2 = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        cv2.imwrite("/run/shm/frames_" + str(count2[-5:]) + ".jpg",frame2)
-        pics = glob.glob('/run/shm/frames*.jpg')
+        cv2.imwrite("/run/shm/buffer_" + str(count[-6:]) + ".jpg",frame2)
+        pics = glob.glob('/run/shm/buffer*.jpg')
         pics.sort(reverse = True)
         # delete oldest jpeg if > pre_frames set
         jcount = len(pics)
@@ -132,13 +127,14 @@ def app_callback(pad, info, user_data):
             os.remove(pics[jcount - 1])
         
     elif record == 1: # record frames
-        count +=1
-        count2 = "00000" + str(count)
+        f_count +=1
+        count = "00000" + str(f_count)
         frame2 = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        cv2.imwrite("/run/shm/frames_" + str(count2[-5:]) + ".jpg",frame2)
+        cv2.imwrite("/run/shm/frames_" + str(count[-5:]) + ".jpg",frame2)
         
-    if time.monotonic() - start2 > mp4_timer: # make mp4s if no detections for 10 seconds
+    if time.monotonic() - start2 > mp4_timer and record == 0: # make mp4s if not recording for mp4_timer seconds
         start2 = time.monotonic()
+        rec_led.off()
         mpics = glob.glob('/run/shm/2*.jpg')
         mpics.sort(reverse = False)
         z = ""
@@ -164,7 +160,7 @@ def app_callback(pad, info, user_data):
                 cmd += '-vf drawtext="fontsize=15:fontfile=/usr/share/fonts/truetype/freefont/FreeSerif.ttf:\ '
                 cmd += "timecode='  " +str(hour) +"\:" + str(mins) + "\:" + str(secs) + "\:00':rate=25:text=" + str(days)+"/"+str(mths)+"/"+str(year)+"--"
                 cmd += ":fontsize=20:fontcolor='white@0.8':\ "
-                cmd += 'boxcolor=black@0.0:box=1:x=10:y=540" '
+                cmd += 'boxcolor=black@0.0:box=1:x=10:y=580" '
                 # destination for mp4 output
                 cmd += "/home/" + user + "/Videos/" + timestamp + "_1.mp4"
                 # run command
@@ -172,28 +168,15 @@ def app_callback(pad, info, user_data):
         for y in range(0,len(mpics)):
             os.remove(mpics[y])
         # check if clock synchronised
-        if os.path.exists("/run/shm/sync.txt"):
-            os.rename('/run/shm/sync.txt', '/run/shm/oldsync.txt')
-        os.system("timedatectl >> /run/shm/sync.txt")
-        # read sync.txt file
-        try:
-            sync = []
-            with open("/run/shm/sync.txt", "r") as file:
-                line = file.readline()
-                while line:
-                    sync.append(line.strip())
-                    line = file.readline()
-            if sync[4] == "System clock synchronized: yes":
-                synced = 1
-            else:
-                synced = 0
-        except:
-            pass
+        if "System clock synchronized: yes" in os.popen("timedatectl").read().split("\n"):
+            synced = 1
+        else:
+            synced = 0
         # check current hour and shutdown
         now = datetime.datetime.now()
-        hour = int(now.strftime("%H"))
-        # move mp4s to USB if present
-        if hour == sd_hour and time.monotonic() - startup > 300 and synced == 1:
+        sd_time = now.replace(hour=sd_hour, minute=sd_mins, second=0, microsecond=0)
+        if now >= sd_time and time.monotonic() - startup > 300 and synced == 1 and auto_sd == 1:
+            # move mp4s to USB if present
             USB_Files  = []
             USB_Files  = (os.listdir(m_user))
             if len(USB_Files) > 0:
@@ -207,16 +190,14 @@ def app_callback(pad, info, user_data):
                     if not os.path.exists(m_user + "/" + USB_Files[0] + "/Videos/" + movi[4]):
                         shutil.move(Videos[xx],m_user + "/" + USB_Files[0] + "/Videos/")
             time.sleep(5)
+            # shutdown
             os.system("sudo shutdown -h now")
-    
 
     return Gst.PadProbeReturn.OK
-    
 
 #-----------------------------------------------------------------------------------------------
 # User Gstreamer Application
 # -----------------------------------------------------------------------------------------------
-
 # This class inherits from the hailo_rpi_common.GStreamerApp class
 
 class GStreamerDetectionApp(GStreamerApp):
@@ -252,12 +233,12 @@ class GStreamerDetectionApp(GStreamerApp):
 
         self.create_pipeline()
 
-
     def get_pipeline_string(self):
         if (self.source_type == "rpi"):
-            source_element = f"libcamerasrc name=src_0 ! " #auto-focus-mode=AfModeManual ! " #auto-focus-mode=2 ! "
-            source_element += f"video/x-raw, format={self.network_format}, width=1280, height=1088 ! "
+            source_element = f"libcamerasrc name=src_0 ! " 
+            source_element += f"video/x-raw, format={self.network_format}, width=1280, height=1088 ! " # dimensions for Pi GS camera
             source_element += QUEUE("queue_src_scale")
+            source_element += f"videocrop top=0 left=96 right=96 bottom=0 ! " # crop to square format
             source_element += f"videoscale ! "
             source_element += f"video/x-raw, format={self.network_format}, width={self.network_width}, height={self.network_height}, framerate=25/1 ! "
         
@@ -300,23 +281,33 @@ class GStreamerDetectionApp(GStreamerApp):
 if __name__ == "__main__":
     Users  = []
     Users.append(os.getlogin())
-    user       = Users[0]
-    count      = 0
-    record     = 0
-    pcount     = 0
-    vid_length = 3  # seconds
-    mp4_timer  = 10
-    pre_frames = 60 # frames
+    user   = Users[0]
+    h_user = "/home/" + os.getlogin( )
+    m_user = "/media/" + os.getlogin( )
+    print(h_user,m_user)
+
+    # check if clock synchronised
+    if "System clock synchronized: yes" in os.popen("timedatectl").read().split("\n"):
+        synced = 1
+    else:
+        synced = 0
+   
     # clear RAM jpegs
     pics = glob.glob('/run/shm/*.jpg')
     pics.sort(reverse = True)
     for x in range(0,len(pics)):
         os.remove(pics[x])
+    # initialise variables   
+    record  = 0
+    b_count = 0  
+    f_count = 0 
     start = time.monotonic()
     start2 = time.monotonic()
     startup = time.monotonic()
     now = datetime.datetime.now()
     timestamp = now.strftime("%y%m%d%H%M%S")
+    rec_led = LED(led)
+    rec_led.off()
     parser = get_default_parser()
     # Add additional arguments here
     parser.add_argument("--network", default="yolov6n", choices=['yolov6n', 'yolov8s', 'yolox_s_leaky'], help="Which Network to use, defult is yolov6n")
