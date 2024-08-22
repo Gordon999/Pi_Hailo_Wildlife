@@ -28,7 +28,7 @@ led        = 21  # record led gpio
 # shutdown time
 sd_hour = 20
 sd_mins = 30
-auto_sd = 1  # set to 1 to shutdown at set time
+auto_sd = 0  # set to 1 to shutdown at set time
 
 # -----------------------------------------------------------------------------------------------
 # User defined class to be used in the callback function
@@ -238,7 +238,7 @@ class GStreamerDetectionApp(GStreamerApp):
             source_element = f"libcamerasrc name=src_0 ! " 
             source_element += f"video/x-raw, format={self.network_format}, width=1280, height=1088 ! " # dimensions for Pi GS camera
             source_element += QUEUE("queue_src_scale")
-            source_element += f"videocrop top=0 left=96 right=96 bottom=0 ! " # crop to square format
+            # source_element += f"videocrop top=0 left=96 right=96 bottom=0 ! " # crop to square format
             source_element += f"videoscale ! "
             source_element += f"video/x-raw, format={self.network_format}, width={self.network_width}, height={self.network_height}, framerate=25/1 ! "
         
