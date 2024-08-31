@@ -1,7 +1,7 @@
 # Pi_Hailo_Wildlife
 Pi5 + Hailo HAT + PI Camera to capture Wildlife videos
 
-## Camera
+## My Camera setup...
 
 ![screenshot](screenshot.jpg)
 
