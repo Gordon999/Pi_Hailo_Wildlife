@@ -1,9 +1,9 @@
-y# Pi_Hailo_Wildlife
+# Pi_Hailo_Wildlife
 Pi5 + Hailo HAT + PI Camera to capture Wildlife videos
 
 ## Camera
 
-![screenshot](screenshoot.jpg)
+![screenshot](screenshot.jpg)
 
 It is a modified version of the hailo pi5 detection.py example https://github.com/hailo-ai/hailo-rpi5-examples/tree/main/basic_pipelines
 
