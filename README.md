@@ -1,6 +1,8 @@
 # Pi_Hailo_Wildlife
 Pi5 + Hailo HAT + PI Camera to capture Wildlife videos
 
+Note improved version using picamera2 at https://github.com/Gordon999/Pi_Hailo_wildlife_2
+
 ## My Camera setup...
 
 ![screenshot](screenshot.jpg)
