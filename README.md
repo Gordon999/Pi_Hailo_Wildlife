@@ -3,9 +3,9 @@ Pi5 + Hailo HAT + PI Camera to capture Wildlife videos
 
 Note at present use BOOKWORM not TRIXIE !!
 
-Note improved version using picamera2 at https://github.com/Gordon999/Pi_Hailo_wildlife_2
+Note improved version using picamera2 at https://github.com/Gordon999/Pi_Hailo_wildlife_2 which can capture full frame videos
 
-or more Updated version at https://github.com/Gordon999/Pi_Hailo_Wildlife_3
+or more Updated version at https://github.com/Gordon999/Pi_Hailo_Wildlife_3 which now makes mp4 videos directly.
 
 
 ## My Camera setup...
