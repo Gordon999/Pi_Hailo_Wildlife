@@ -5,6 +5,9 @@ Note at present use BOOKWORM not TRIXIE !!
 
 Note improved version using picamera2 at https://github.com/Gordon999/Pi_Hailo_wildlife_2
 
+or more Updated version at https://github.com/Gordon999/Pi_Hailo_Wildlife_3
+
+
 ## My Camera setup...
 
 ![screenshot](screenshot.jpg)
